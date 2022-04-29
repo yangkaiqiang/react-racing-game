@@ -183,8 +183,6 @@ import * as THREE from "three";
  */
 export default class Resources {
     constructor(){
-        super()
-
         //加载器 加载游戏所需资源
         this.loader = new Loader()
         this.loader.load([

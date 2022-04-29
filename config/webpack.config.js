@@ -376,26 +376,12 @@ module.exports = function (webpackEnv) {
               },
             },
             {
-              test: /\.(fbx|glb)$/,
-              type: 'asset/resource',
-              use:[
-                {
-                  options: {
-                    name: 'static/models/[name].[hash].[ext]',
-                  },
-                }
-              ]
+              test: /\.(fbx)$/,
+              type: "asset/inline",
             },
             {
-              test: /\.mp3$/,
-              type: 'asset/resource',
-              use:[
-                {
-                  options: {
-                    name: 'static/mp3/[name].[hash].[ext]',
-                  },
-                }
-              ]
+              test: /\.(glb|mp3)$/,
+              type: "asset/resource",
             },
             {
               test: /\.svg$/,

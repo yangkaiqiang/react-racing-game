@@ -3,8 +3,6 @@
  */
 export default class Loader {
     constructor(){
-        super()
-
         this.setLoaders()
     }
 
