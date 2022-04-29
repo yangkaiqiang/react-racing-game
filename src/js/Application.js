@@ -10,7 +10,7 @@ export default class Application extends React.Component {
     //当前画布对象
     this.$canvas = ReactDOM.findDOMNode(this);
 
-    //针对场景大小控制的类
+    // //针对场景大小控制的类
     this.sizes = new Sizes();
 
     //导入资源
@@ -20,7 +20,7 @@ export default class Application extends React.Component {
     this.setConfig();
 
     //设置调试工具
-    this.setDebug();
+    // this.setDebug();
 
     //设置场景构造器
     this.setRenderer();
@@ -33,6 +33,10 @@ export default class Application extends React.Component {
 
     //设置精灵
     this.setWorld();
+
+	
+    //测试场景
+    this.test()
   }
 
   setConfig(){}
@@ -59,7 +63,7 @@ export default class Application extends React.Component {
       canvas: this.$canvas,  //一个供渲染器绘制其输出的canvas。如果没有传这个参数，会创建一个新canvas
       alpha: true,  // canvas是否包含透明度
     });
-console.log(this.sizes)
+
     //构造器设置
     this.renderer.setClearColor(0x000000, 1); //设置颜色及其透明度
     this.renderer.setPixelRatio(2); //设置设备像素比。通常用于避免HiDPI设备上绘图模糊
@@ -76,6 +80,17 @@ console.log(this.sizes)
   setPasses(){}
 
   setWorld(){}
+
+
+  test(){
+    const geometry = new THREE.BoxGeometry();
+		const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+		const cube = new THREE.Mesh( geometry, material );
+		this.scene.add( cube );
+
+		this.camera.instance.position.z = 5;
+    this.renderer.render(this.scene, this.camera.instance)
+  }
 
   render(){
     return (
