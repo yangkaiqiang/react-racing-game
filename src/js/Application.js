@@ -1,9 +1,10 @@
-import './App.css';
+import React from 'react';
 
-function App() {
-  return (
-    <canvas id="webgl"></canvas>
-  );
+export default class Application extends React.Component {
+
+  render(){
+    return (
+      <canvas id="webgl"></canvas>
+    );
+  }
 }
-
-export default App;
