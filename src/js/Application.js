@@ -4,11 +4,15 @@ import * as THREE from "three";
 import Resources from './base/Resources'
 import Camera from './base/Camera';
 import Sizes from './utils/Sizes';
+import Time from './utils/Time';
 
 export default class Application extends React.Component {
   componentDidMount(){
     //当前画布对象
     this.$canvas = ReactDOM.findDOMNode(this);
+
+    //对于画面的交互事件处理
+    this.time = new Time();
 
     // //针对场景大小控制的类
     this.sizes = new Sizes();
@@ -89,7 +93,11 @@ export default class Application extends React.Component {
 		this.scene.add( cube );
 
 		this.camera.instance.position.z = 5;
-    this.renderer.render(this.scene, this.camera.instance)
+    this.time.on("tick", () => {
+      this.camera.instance.position.z  += 0.02; 
+      this.renderer.render(this.scene, this.camera.instance)  
+    });
+    
   }
 
   render(){

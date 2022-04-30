@@ -1,8 +1,12 @@
+import EventEmitter from "./EventEmitter";
+
 /**
  * 游戏窗口
  */
-export default class Sizes {
+export default class Sizes extends EventEmitter {
   constructor() {
+    super();
+
     this.viewport = {};
     this.$sizeViewport = document.createElement("div");
     this.$sizeViewport.style.width = "100vw";
