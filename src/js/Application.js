@@ -5,6 +5,7 @@ import Resources from './base/Resources'
 import Camera from './base/Camera';
 import Sizes from './utils/Sizes';
 import Time from './utils/Time';
+import World from './world/index';
 
 export default class Application extends React.Component {
   componentDidMount(){
@@ -83,18 +84,16 @@ export default class Application extends React.Component {
 
   setPasses(){}
 
-  setWorld(){}
+  setWorld(){
+    this.world = new World();
+    
+    this.scene.add(this.world.container);
+  }
 
 
   test(){
-    const geometry = new THREE.BoxGeometry();
-		const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-		const cube = new THREE.Mesh( geometry, material );
-		this.scene.add( cube );
-
 		this.camera.instance.position.z = 5;
     this.time.on("tick", () => {
-      this.camera.instance.position.z  += 0.02; 
       this.renderer.render(this.scene, this.camera.instance)  
     });
     
