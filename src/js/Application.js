@@ -7,11 +7,18 @@ import Sizes from './utils/Sizes';
 import Time from './utils/Time';
 import World from './world/index';
 
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+
+import BlurPass from "./passes/Blur.js";
+import GlowsPass from "./passes/Glows.js";
+
 export default class Application extends React.Component {
   componentDidMount(){
     //当前画布对象
     this.$canvas = ReactDOM.findDOMNode(this);
-
+    
     //对于画面的交互事件处理
     this.time = new Time();
 
@@ -33,15 +40,11 @@ export default class Application extends React.Component {
     //设置相机
     this.setCamera();
 
-    //设置模型
+    //设置模型后期合成处理
     this.setPasses();
 
     //设置精灵
     this.setWorld();
-
-	
-    //测试场景
-    this.test()
   }
 
   setConfig(){}
@@ -51,6 +54,7 @@ export default class Application extends React.Component {
   setCamera(){
     //获取相机
     this.camera = new Camera({
+      time: this.time,
       sizes: this.sizes,
       renderer: this.renderer,
     });
@@ -82,21 +86,49 @@ export default class Application extends React.Component {
     this.renderer.autoClear = false; //定义渲染器是否在渲染每一帧之前自动清除其输出
   }
 
-  setPasses(){}
+  setPasses(){
+    this.passes = {};
+
+    //实现后期处理效果 该类管理了产生最终视觉效果的后期处理过程链  根据它们添加/插入的顺序来执行，最后一个过程会被自动渲染到屏幕上
+    this.passes.composer = new EffectComposer(this.renderer);
+    //创建一个通道  该通道在指定的场景和相机的基础上渲染出一个新的场景   只会渲染场景，不会把结果输出到场景上
+    this.passes.renderPass = new RenderPass(this.scene, this.camera.instance);
+    //使用通道传入一个自定义的着色器，用来生成高级的、自定义的后期处理通道 产生各种模糊效果和高级滤镜。
+    this.passes.horizontalBlurPass = new ShaderPass(BlurPass);
+    //给着色器传参
+    this.passes.horizontalBlurPass.strength = 0;
+    this.passes.horizontalBlurPass.material.uniforms.uResolution.value = new THREE.Vector2(this.sizes.viewport.width, this.sizes.viewport.height);
+    this.passes.horizontalBlurPass.material.uniforms.uStrength.value = new THREE.Vector2(this.passes.horizontalBlurPass.strength, 0);
+    
+    this.passes.vertivalBlurPass = new ShaderPass(BlurPass);
+    this.passes.vertivalBlurPass.strength = 0;
+    this.passes.vertivalBlurPass.material.uniforms.uResolution.value = new THREE.Vector2(this.sizes.viewport.width, this.sizes.viewport.height);
+    this.passes.vertivalBlurPass.material.uniforms.uStrength.value = new THREE.Vector2(this.passes.horizontalBlurPass.strength, 0);
+  
+  
+    this.passes.glowPass = new ShaderPass(GlowsPass);
+    this.passes.glowPass.color = '#ffcfe0';
+    this.passes.glowPass.material.uniforms.uPosition.value = new THREE.Vector2(0, 0.25);
+    this.passes.glowPass.material.uniforms.uRadius.value = 0.7;
+    this.passes.glowPass.material.uniforms.uColor.value = new THREE.Color(this.passes.glowPass.color);
+    this.passes.glowPass.material.uniforms.uAlpha.value = 0.55;
+
+    //将后期处理通道依次添加
+    this.passes.composer.addPass(this.passes.renderPass);
+    this.passes.composer.addPass(this.passes.horizontalBlurPass);
+    this.passes.composer.addPass(this.passes.vertivalBlurPass);
+    this.passes.composer.addPass(this.passes.glowPass);
+  
+    //监听刷新
+    this.time.on('tick', () => {
+      this.passes.composer.render();
+      // this.renderer.render(this.scene, this.camera.instance)
+    })
+  }
 
   setWorld(){
     this.world = new World();
-    
     this.scene.add(this.world.container);
-  }
-
-
-  test(){
-		this.camera.instance.position.z = 5;
-    this.time.on("tick", () => {
-      this.renderer.render(this.scene, this.camera.instance)  
-    });
-    
   }
 
   render(){
