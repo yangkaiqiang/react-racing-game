@@ -1,5 +1,9 @@
 import * as THREE from "three";
 
+// import shaderFragment from "../../assets/shaders/floor/fragment.glsl";
+// import shaderVertex from "../../assets/shaders/floor/vertex.glsl";
+
+
 export default function () {
   const uniforms = {
     tBackground: { value: null },
@@ -25,12 +29,10 @@ export default function () {
     void main() {
       vec4 backgroundColor = texture2D(tBackground, vUv);
       gl_FragColor = backgroundColor;
-      //gl_FragColor = vec4(0,0,0,0.1);
     }
   `;
 
   const material = new THREE.ShaderMaterial({
-    vertexColors:THREE.FaceColors ,
     wireframe: false,  //是否将几何体渲染为线框
     transparent: false,  //定义此材质是否透明
     uniforms,  //指定要传递给shader代码的uniforms
