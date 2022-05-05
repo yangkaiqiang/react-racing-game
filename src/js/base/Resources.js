@@ -1,6 +1,7 @@
 import * as THREE from "three";
 
  import Loader from "../utils/Loader";
+ import EventEmitter from "../utils/EventEmitter";
  
  // Matcaps
  import matcapBeigeSource from "../../assets/models/matcaps/beige.png";
@@ -181,11 +182,13 @@ import * as THREE from "three";
 /**
  * 资源类
  */
-export default class Resources {
+export default class Resources extends EventEmitter {
     constructor(){
-        //加载器 加载游戏所需资源
-        this.loader = new Loader()
-        this.loader.load([
+      super();
+
+      //加载器 加载游戏所需资源
+      this.loader = new Loader()
+      this.loader.load([
             // Matcaps
             { name: "matcapBeige", source: matcapBeigeSource, type: "texture" },
             { name: "matcapBlack", source: matcapBlackSource, type: "texture" },
@@ -505,6 +508,17 @@ export default class Resources {
             { name: "wig2", source: wig2Source },
             { name: "wig3", source: wig3Source },
             { name: "wig4", source: wig4Source },
-          ])
+      ]);
+
+      //每个资源加载完毕 触发进度条事件
+      this.loader.on('fileEnd', (_resource, _data) => {
+        // console.log(this.loader.loaded , this.loader.toLoad)
+        this.trigger('progress', [this.loader.loaded / this.loader.toLoad])
+      })
+
+      //所有加载完毕 触发准备完毕事件
+      this.loader.on('end', (_resource, _data) => {
+        this.trigger('ready')
+      })
     }
 }

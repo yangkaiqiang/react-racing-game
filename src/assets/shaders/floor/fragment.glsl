@@ -1,1 +1,11 @@
-export default "#define GLSLIFY 1\nuniform sampler2D tBackground;\n\nvarying vec2 vUv;\n\nvoid main()\n{\n    vec4 backgroundColor = texture2D(tBackground, vUv);\n\n    gl_FragColor = backgroundColor;\n}\n";
+#define GLSLIFY 1
+uniform sampler2D tBackground;
+
+varying vec2 vUv;
+
+void main()
+{
+    vec4 backgroundColor = texture2D(tBackground, vUv);
+    
+    gl_FragColor = backgroundColor;
+}

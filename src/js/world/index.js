@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import gsap from "gsap";
 import Floor from "./Floor.js";
+import Areas from "./Areas.js";
 
 export default class {
     constructor(_options){
@@ -12,6 +13,9 @@ export default class {
         //设置地面
         this.setFloor();
 
+        //设置世界中的区域加载
+        this.setAreas();
+
         //设置启动屏
         this.setStartingScreen();
     }
@@ -19,6 +23,10 @@ export default class {
     setStartingScreen() {
         this.startingScreen = {};
         
+        this.startingScreen.area = this.areas.add({
+            position: new THREE.Vector2(0, 0),
+            halfExtents: new THREE.Vector2(2.35, 1.5),
+        });
 
         this.startingScreen.loadingLabel = {};
         this.startingScreen.loadingLabel.geometry = new THREE.PlaneBufferGeometry(2.5, 2.5/4);
@@ -63,23 +71,30 @@ export default class {
         this.startingScreen.startLabel.mesh.matrixAutoUpdate = false;
         this.container.add(this.startingScreen.startLabel.mesh);
         
-        setTimeout(() => {
+        this.resources.on('progress', _progress => {
+            this.startingScreen.area.floorBorder.material.uniforms.uAlpha.value = 1;
+            this.startingScreen.area.floorBorder.material.uniforms.uLoadProgress.value = _progress;
+        })
+        
+        this.resources.on('ready', () => {
             window.requestAnimationFrame(() => {
+                gsap.to(this.startingScreen.area.floorBorder.material.uniforms.uAlpha, {duration: 0.3, value: 0.3 });
                 gsap.to(this.startingScreen.loadingLabel.material, {duration: 0.3, opacity: 0});
                 gsap.to(this.startingScreen.startLabel.material, {duration: 0.3, opacity: 1, delay:0.3});
             })
-        },2000)
-        
-        // this.resources.on('ready', () => {
-        //     window.requestAnimationFrame(() => {
-        //         gsap.to(this.startingScreen.loadingLabel.material, {duration: 0.3, opacity: 0});
-        //         gsap.to(this.startingScreen.startLabel.material, {duration: 0.3, opacity: 1, delay:0.3});
-        //     })
-        // })
+        })
     }
 
     setFloor(){
         this.floor = new Floor();
         this.container.add(this.floor.container)
+    }
+
+    setAreas(){
+        this.areas = new Areas({
+            // renderer: this.renderer,
+            resources: this.resources
+        })
+        this.container.add(this.areas.container)
     }
 }
