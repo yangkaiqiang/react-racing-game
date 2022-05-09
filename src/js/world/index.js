@@ -5,6 +5,8 @@ import Areas from "./Areas.js";
 
 export default class {
     constructor(_options){
+        this.time = _options.time;
+        this.camera = _options.camera;
         this.resources = _options.resources;
 
         this.container = new THREE.Object3D();
@@ -26,6 +28,7 @@ export default class {
         this.startingScreen.area = this.areas.add({
             position: new THREE.Vector2(0, 0),
             halfExtents: new THREE.Vector2(2.35, 1.5),
+            active: false,
         });
 
         this.startingScreen.loadingLabel = {};
@@ -78,10 +81,20 @@ export default class {
         
         this.resources.on('ready', () => {
             window.requestAnimationFrame(() => {
+                //此方法控制在loading加载过程中是否可点击 切换页面
+                this.startingScreen.area.activate();
+
                 gsap.to(this.startingScreen.area.floorBorder.material.uniforms.uAlpha, {duration: 0.3, value: 0.3 });
                 gsap.to(this.startingScreen.loadingLabel.material, {duration: 0.3, opacity: 0});
                 gsap.to(this.startingScreen.startLabel.material, {duration: 0.3, opacity: 1, delay:0.3});
             })
+        })
+
+        this.startingScreen.area.on('interact', () => {
+            this.startingScreen.area.deactivate();
+
+            gsap.to(this.startingScreen.area.floorBorder.material.uniforms.uProgress, { duration: 0.3, delay: 0.4, value: 0});
+            gsap.to(this.startingScreen.startLabel.material, {duration: 0.3, delay: 0.4, opacity: 0});
         })
     }
 
@@ -93,6 +106,8 @@ export default class {
     setAreas(){
         this.areas = new Areas({
             // renderer: this.renderer,
+            time: this.time,
+            camera: this.camera,
             resources: this.resources
         })
         this.container.add(this.areas.container)
