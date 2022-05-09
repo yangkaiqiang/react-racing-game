@@ -14,6 +14,9 @@ export default class Area extends EventEmitter{
         this.time = _options.time;
         this.position = _options.position;
         this.halfExtents = _options.halfExtents;
+        this.active = _options.active;
+
+        this.isIn = false;
 
         this.container = new THREE.Object3D();
         this.container.position.x = this.position.x;
@@ -27,13 +30,52 @@ export default class Area extends EventEmitter{
     }
 
     out(){
+        this.isIn = false;
         gsap.killTweensOf(this.fence.mesh.position);
-        gsap.to(this.fence.mesh.position, { duration: 0.35, ease: "back.out(4)", z: -this.fence.offset })
+        gsap.to(this.fence.mesh.position, { duration: 0.35, ease: "back.out(4)", z: -this.fence.offset });
     }
 
     in(){
+        this.isIn = true;
+
+        if (!this.active) return;
+
         gsap.killTweensOf(this.fence.mesh.position);
-        gsap.to(this.fence.mesh.position, { duration: 0.35, ease: "back.out(3)", z: this.fence.offset })
+        gsap.to(this.fence.mesh.position, { duration: 0.35, ease: "back.out(3)", z: this.fence.offset });
+    }
+
+    activate(){
+        this.active = true;
+
+        this.isIn && this.in();
+    }
+
+    deactivate(){
+        this.active = false;
+        this.isIn && this.out();
+    }
+
+    interact(){console.log(this.active)
+        if(!this.active) return;
+        console.log(this.active)
+
+        //点击时取消正在执行的动画 重新执行
+        gsap.killTweensOf(this.fence.mesh.position);
+        gsap.killTweensOf(this.floorBorder.material.uniforms.uAlpha);
+        gsap.killTweensOf(this.fence.material.uniforms.uBorderAlpha);
+
+        gsap.to(this.fence.mesh.position, {
+            duration: 0.05,
+            z: 0,
+            onComplete: () => {
+                gsap.to(this.fence.mesh.position, {duration: 0.25, ease: "back.out(2)", z: 0.5});
+                gsap.fromTo(this.floorBorder.material.uniforms.uAlpha, {value: 1}, {value: 0.5, duration: 1.5});
+                gsap.fromTo(this.fence.material.uniforms.uBorderAlpha, {value: 1}, {value: 0.5, duration: 1.5});
+            }
+        });
+
+        //交互开始
+        this.trigger('interact');
     }
 
     setInteractions(){

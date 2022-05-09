@@ -31,6 +31,10 @@ export default class Areas {
             this.mouse.coordinates.y = -(_event.clientY / window.innerHeight) * 2 + 1;
         });
 
+        window.addEventListener('mousedown', () => {
+            this.mouse.currentArea && this.mouse.currentArea.interact();
+        });
+
         this.time.on('tick', () => {
             //通过相机与鼠标位置更新射线
             this.mouse.raycaster.setFromCamera(
@@ -64,6 +68,7 @@ export default class Areas {
             // renderer: this.renderer,
             time: this.time,
             resources: this.resources,
+            active: true,
             ..._options,
         });
 
