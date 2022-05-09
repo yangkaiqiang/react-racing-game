@@ -127,7 +127,12 @@ export default class Application extends React.Component {
   }
 
   setWorld(){
-    this.world = new World();
+    this.world = new World({
+      time: this.time,
+      camera: this.camera,
+      resources: this.resources
+    });
+    
     this.scene.add(this.world.container);
   }
 
