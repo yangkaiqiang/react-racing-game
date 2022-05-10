@@ -12,6 +12,7 @@ export default class Area extends EventEmitter{
         super();
 
         this.time = _options.time;
+        this.sounds = _options.sounds;
         this.position = _options.position;
         this.halfExtents = _options.halfExtents;
         this.active = _options.active;
@@ -76,6 +77,9 @@ export default class Area extends EventEmitter{
 
         //交互开始
         this.trigger('interact');
+
+        //进场声音
+        this.sounds.play('uiArea');
     }
 
     setInteractions(){

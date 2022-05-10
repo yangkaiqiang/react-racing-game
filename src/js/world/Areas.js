@@ -6,6 +6,7 @@ export default class Areas {
         // this.renderer = _options.renderer;
         this.time = _options.time;
         this.camera = _options.camera;
+        this.sounds = _options.sounds;
         this.resources = _options.resources;
 
         this.items = [];
@@ -67,6 +68,8 @@ export default class Areas {
         const area = new Area({
             // renderer: this.renderer,
             time: this.time,
+            camera: this.camera,
+            sounds: this.sounds,
             resources: this.resources,
             active: true,
             ..._options,

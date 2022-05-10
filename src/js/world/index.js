@@ -2,6 +2,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 import Floor from "./Floor.js";
 import Areas from "./Areas.js";
+import Sounds from './Sounds.js';
 
 export default class {
     constructor(_options){
@@ -12,6 +13,9 @@ export default class {
         this.container = new THREE.Object3D();
         this.container.matrixAutoUpdate = false;
 
+        //设置声音
+        this.setSounds();
+
         //设置地面
         this.setFloor();
 
@@ -20,6 +24,10 @@ export default class {
 
         //设置启动屏
         this.setStartingScreen();
+    }
+
+    start() {
+
     }
 
     setStartingScreen() {
@@ -96,6 +104,15 @@ export default class {
             gsap.to(this.startingScreen.area.floorBorder.material.uniforms.uProgress, { duration: 0.3, delay: 0.4, value: 0});
             gsap.to(this.startingScreen.startLabel.material, {duration: 0.3, delay: 0.4, opacity: 0});
         })
+
+        this.start();
+        setTimeout(() => {
+
+        }, 600);
+    }
+
+    setSounds(){
+        this.sounds = new Sounds();
     }
 
     setFloor(){
@@ -108,6 +125,7 @@ export default class {
             // renderer: this.renderer,
             time: this.time,
             camera: this.camera,
+            sounds: this.sounds,
             resources: this.resources
         })
         this.container.add(this.areas.container)
