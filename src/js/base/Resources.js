@@ -188,6 +188,8 @@ export default class Resources extends EventEmitter {
 
       //加载器 加载游戏所需资源
       this.loader = new Loader()
+      this.items = {};
+      
       this.loader.load([
             // Matcaps
             { name: "matcapBeige", source: matcapBeigeSource, type: "texture" },
@@ -512,6 +514,15 @@ export default class Resources extends EventEmitter {
 
       //每个资源加载完毕 触发进度条事件
       this.loader.on('fileEnd', (_resource, _data) => {
+        this.items[_resource.name] = _data;
+
+        if (_resource.type === "texture") {
+          const texture = new THREE.Texture(_data);
+          texture.needsUpdate = true;
+
+          this.items[`${_resource.name}Texture`] = texture;
+        }
+
         // console.log(this.loader.loaded , this.loader.toLoad)
         this.trigger('progress', [this.loader.loaded / this.loader.toLoad])
       })

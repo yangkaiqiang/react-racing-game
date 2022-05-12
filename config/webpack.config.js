@@ -25,7 +25,7 @@ const ForkTsCheckerWebpackPlugin =
     ? require('react-dev-utils/ForkTsCheckerWarningWebpackPlugin')
     : require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
-
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const createEnvironmentHash = require('./webpack/persistentCache/createEnvironmentHash');
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
@@ -374,6 +374,10 @@ module.exports = function (webpackEnv) {
                   maxSize: imageInlineSizeLimit,
                 },
               },
+            },
+            {
+              test: /\.(glsl)$/,
+              type: 'asset/source'
             },
             {
               test: /\.(fbx)$/,
@@ -755,9 +759,50 @@ module.exports = function (webpackEnv) {
             },
           },
         }),
+      
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: path.resolve(paths.appSrc, './lib'),
+            to: path.resolve(paths.appBuild, './lib'),
+          },
+        ],
+      }),
     ].filter(Boolean),
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+
+    optimization: isEnvProduction ? {
+      splitChunks: {
+        chunks: 'async',
+        minSize: 20000,
+        minRemainingSize: 0,
+        minChunks: 1,
+        maxAsyncRequests: 30,
+        maxInitialRequests: 30,
+        enforceSizeThreshold: 50000,
+        cacheGroups: {
+          three: {
+            name: 'three',
+            test: /[\\/]node_modules[\\/]three[\\/]/i,
+            priority: 10,
+            chunks: 'all',
+          },
+          vendors: {
+            name: 'chunk-vendors',
+            test: /[\\/]node_modules[\\/]/,
+            priority: -10,
+            reuseExistingChunk: true,
+            chunks: 'all',
+          },
+          default: {
+            minChunks: 2,
+            priority: -20,
+            reuseExistingChunk: true,
+          },
+        },
+      },
+    } : {},
   };
 };

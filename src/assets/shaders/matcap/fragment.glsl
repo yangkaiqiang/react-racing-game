@@ -1,1 +1,102 @@
-export default "#define GLSLIFY 1\n#define TOTO\n#define MATCAP\n#define USE_MATCAP\n\nuniform vec3 diffuse;\nuniform float opacity;\nuniform sampler2D matcap;\n\nvarying vec3 vViewPosition;\n\n// Custom start\nuniform mat3 normalMatrix;\nuniform float uIndirectDistanceAmplitude;\nuniform float uIndirectDistanceStrength;\nuniform float uIndirectDistancePower;\nuniform float uIndirectAngleStrength;\nuniform float uIndirectAngleOffset;\nuniform float uIndirectAnglePower;\nuniform vec3 uIndirectColor;\n\nvarying vec3 vWorldPosition;\n// Custom end\n\n#ifndef FLAT_SHADED\n\n    varying vec3 vNormal;\n\n#endif\n\n#include <common>\n#include <uv_pars_fragment>\n#include <map_pars_fragment>\n#include <alphamap_pars_fragment>\n\n#include <fog_pars_fragment>\n#include <bumpmap_pars_fragment>\n#include <normalmap_pars_fragment>\n#include <logdepthbuf_pars_fragment>\n#include <clipping_planes_pars_fragment>\n\nvoid main() {\n\n    if(vWorldPosition.z < 0.0)\n    {\n        discard;\n    }\n\n    #include <clipping_planes_fragment>\n\n    vec4 diffuseColor = vec4( diffuse, opacity );\n\n    #include <logdepthbuf_fragment>\n    #include <map_fragment>\n    #include <alphamap_fragment>\n    #include <alphatest_fragment>\n    #include <normal_fragment_begin>\n    #include <normal_fragment_maps>\n\n    vec3 viewDir = normalize( vViewPosition );\n    vec3 x = normalize( vec3( viewDir.z, 0.0, - viewDir.x ) );\n    vec3 y = cross( viewDir, x );\n    vec2 uv = vec2( dot( x, normal ), dot( y, normal ) ) * 0.495 + 0.5; // 0.495 to remove artifacts caused by undersized matcap disks\n\n    #ifdef USE_MATCAP\n\n        vec4 matcapColor = texture2D( matcap, uv );\n        // matcapColor = matcapTexelToLinear( matcapColor );\n\n    #else\n\n        vec4 matcapColor = vec4( 1.0 );\n\n    #endif\n\n    vec3 outgoingLight = diffuseColor.rgb * matcapColor.rgb;\n\n    // Custom start\n    float indirectDistanceStrength = clamp(1.0 - vWorldPosition.z / uIndirectDistanceAmplitude, 0.0, 1.0) * uIndirectDistanceStrength;\n    indirectDistanceStrength = pow(indirectDistanceStrength, uIndirectDistancePower);\n    indirectDistanceStrength = clamp(indirectDistanceStrength, 0.0, 1.0);\n\n    vec3 worldNormal = inverseTransformDirection(vNormal, viewMatrix);\n\n    float indirectAngleStrength = dot(normalize(worldNormal), vec3(0.0, 0.0, - 1.0)) + uIndirectAngleOffset;\n    indirectAngleStrength = clamp(indirectAngleStrength * uIndirectAngleStrength, 0.0, 1.0);\n    indirectAngleStrength = pow(indirectAngleStrength, uIndirectAnglePower);\n\n    // vec3 uIndirectColor = vec3(208.0 / 255.0, 69.0 / 255.0, 0.0 / 255.0);\n    float indirectStrength = indirectDistanceStrength * indirectAngleStrength;\n    // float indirectStrength = indirectAngleStrength;\n\n    // gl_FragColor = vec4(vec3(worldNormal), 1.0);\n    // gl_FragColor = vec4(outgoingLight, diffuseColor.a);\n    // gl_FragColor = vec4(vec3(indirectStrength), diffuseColor.a);\n    gl_FragColor = vec4(mix(outgoingLight, uIndirectColor, indirectStrength), diffuseColor.a);\n    // Custom end\n\n    #include <premultiplied_alpha_fragment>\n    #include <tonemapping_fragment>\n    #include <encodings_fragment>\n    #include <fog_fragment>\n\n}\n";
+#define GLSLIFY 1
+#define TOTO
+#define MATCAP
+#define USE_MATCAP
+
+uniform vec3 diffuse;
+uniform float opacity;
+uniform sampler2D matcap;
+
+varying vec3 vViewPosition;
+
+// Custom start
+uniform mat3 normalMatrix;
+uniform float uIndirectDistanceAmplitude;
+uniform float uIndirectDistanceStrength;
+uniform float uIndirectDistancePower;
+uniform float uIndirectAngleStrength;
+uniform float uIndirectAngleOffset;
+uniform float uIndirectAnglePower;
+uniform vec3 uIndirectColor;
+
+varying vec3 vWorldPosition;
+// Custom end
+
+#ifndef FLAT_SHADED
+
+varying vec3 vNormal;
+
+#endif
+
+#include <common>
+#include <uv_pars_fragment>
+#include <map_pars_fragment>
+#include <alphamap_pars_fragment>
+
+#include <fog_pars_fragment>
+#include <bumpmap_pars_fragment>
+#include <normalmap_pars_fragment>
+#include <logdepthbuf_pars_fragment>
+#include <clipping_planes_pars_fragment>
+
+void main() {
+    
+    if(vWorldPosition.z < 0.0)
+    {
+        discard;
+    }
+    
+    #include <clipping_planes_fragment>
+    
+    vec4 diffuseColor = vec4( diffuse, opacity );
+    
+    #include <logdepthbuf_fragment>
+     #include <map_fragment>
+     #include <alphamap_fragment>
+     #include <alphatest_fragment>
+     #include <normal_fragment_begin>
+     #include <normal_fragment_maps>
+     
+     vec3 viewDir = normalize( vViewPosition );
+     vec3 x = normalize( vec3( viewDir.z, 0.0, - viewDir.x ) );
+     vec3 y = cross( viewDir, x );
+     vec2 uv = vec2( dot( x, normal ), dot( y, normal ) ) * 0.495 + 0.5; // 0.495 to remove artifacts caused by undersized matcap disks
+     
+     #ifdef USE_MATCAP
+     
+     vec4 matcapColor = texture2D( matcap, uv );
+     // matcapColor = matcapTexelToLinear( matcapColor );
+     
+     #else
+     
+     vec4 matcapColor = vec4( 1.0 );
+     
+     #endif
+     
+     vec3 outgoingLight = diffuseColor.rgb * matcapColor.rgb;
+     
+     // Custom start
+     float indirectDistanceStrength = clamp(1.0 - vWorldPosition.z / uIndirectDistanceAmplitude, 0.0, 1.0) * uIndirectDistanceStrength;
+     indirectDistanceStrength = pow(indirectDistanceStrength, uIndirectDistancePower);
+     indirectDistanceStrength = clamp(indirectDistanceStrength, 0.0, 1.0);
+    
+     vec3 worldNormal = inverseTransformDirection(vNormal, viewMatrix);
+     
+     float indirectAngleStrength = dot(normalize(worldNormal), vec3(0.0, 0.0, - 1.0)) + uIndirectAngleOffset;
+     indirectAngleStrength = clamp(indirectAngleStrength * uIndirectAngleStrength, 0.0, 1.0);
+     indirectAngleStrength = pow(indirectAngleStrength, uIndirectAnglePower);
+     
+     // vec3 uIndirectColor = vec3(208.0 / 255.0, 69.0 / 255.0, 0.0 / 255.0);
+     float indirectStrength = indirectDistanceStrength * indirectAngleStrength;
+     // float indirectStrength = indirectAngleStrength;
+     
+     // gl_FragColor = vec4(vec3(worldNormal), 1.0);
+     // gl_FragColor = vec4(outgoingLight, diffuseColor.a);
+     // gl_FragColor = vec4(vec3(indirectStrength), diffuseColor.a);
+     gl_FragColor = vec4(mix(outgoingLight, uIndirectColor, indirectStrength), diffuseColor.a);
+     // Custom end\n\n    #include <premultiplied_alpha_fragment>\n    #include <tonemapping_fragment>
+     #include <encodings_fragment>
+     #include <fog_fragment>
+     
+     }
+     

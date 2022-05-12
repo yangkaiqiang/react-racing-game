@@ -3,6 +3,9 @@ import gsap from "gsap";
 import Floor from "./Floor.js";
 import Areas from "./Areas.js";
 import Sounds from './Sounds.js';
+import Objects from "./Objects.js";
+import Materials from "./Materials.js";
+import IntroSection from "./sections/IntroSection.js";
 
 export default class {
     constructor(_options){
@@ -27,7 +30,10 @@ export default class {
     }
 
     start() {
-
+        this.setReveal();
+        this.setMaterials();
+        this.setObjects();
+        this.setSections();
     }
 
     setStartingScreen() {
@@ -88,6 +94,8 @@ export default class {
         })
         
         this.resources.on('ready', () => {
+            
+
             window.requestAnimationFrame(() => {
                 //此方法控制在loading加载过程中是否可点击 切换页面
                 this.startingScreen.area.activate();
@@ -103,12 +111,13 @@ export default class {
 
             gsap.to(this.startingScreen.area.floorBorder.material.uniforms.uProgress, { duration: 0.3, delay: 0.4, value: 0});
             gsap.to(this.startingScreen.startLabel.material, {duration: 0.3, delay: 0.4, opacity: 0});
+        
+            this.start();
+
+            window.setTimeout(() => {
+                this.reveal.go();
+            }, 600);
         })
-
-        this.start();
-        setTimeout(() => {
-
-        }, 600);
     }
 
     setSounds(){
@@ -129,5 +138,59 @@ export default class {
             resources: this.resources
         })
         this.container.add(this.areas.container)
+    }
+
+    setReveal(){
+        this.reveal = {};
+
+        this.reveal.matcapsProgress = 0;
+        this.reveal.previousMatcapsProgress = null;
+
+        this.reveal.go = () => {
+            gsap.fromTo(
+              this.reveal,
+              { matcapsProgress: 0 },
+              { matcapsProgress: 1, duration: 3 }
+            );
+        }
+
+        this.time.on("tick", () => {
+            if (this.reveal.matcapsProgress !== this.reveal.previousMatcapsProgress) {
+              for (const _materialKey in this.materials.shades.items) {
+                const material = this.materials.shades.items[_materialKey];
+                material.uniforms.uRevealProgress.value = this.reveal.matcapsProgress;
+              }
+            }
+        });
+    }
+
+    setMaterials(){
+        this.materials = new Materials({
+            time: this.time,
+            resources: this.resources
+        });
+    }
+
+    setObjects(){
+        this.objects = new Objects({
+            materials: this.materials,
+        });
+
+        this.container.add(this.objects.container);
+    }
+
+    setSections(){
+        this.sections = {};
+
+        const options = {
+            resources: this.resources,
+            objects: this.objects,
+        };
+
+        // Intro
+        this.sections.intro = new IntroSection({
+            ...options,
+        });
+        this.container.add(this.sections.intro.container);
     }
 }

@@ -10,6 +10,7 @@ export default class Loader extends EventEmitter{
     constructor(){
         super();
 
+        this.items = {};
         this.toLoad = 0;
         this.loaded = 0;
 
@@ -115,7 +116,7 @@ export default class Loader extends EventEmitter{
      */
     fileLoadEnd(_resource, _data){
         this.loaded++;
-        // this.items[_resource.name] = _data;
+        this.items[_resource.name] = _data;
 
         this.trigger('fileEnd', [_resource, _data]);
 

@@ -50,7 +50,7 @@ export default class Camera {
       //获取透视相机
       this.instance = new THREE.PerspectiveCamera(40, this.sizes.viewport.width / this.sizes.viewport.height, 1, 80);
       this.instance.up.set(0, 0, 1); //这个属性由lookAt方法所使用，例如，来决定结果的朝向
-      this.instance.position.copy(this.angle.value.clone().normalize().multiplyScalar(15))
+      this.instance.position.copy(this.angle.value.clone().normalize().multiplyScalar(26))
       this.instance.lookAt(new THREE.Vector3()); //表示世界空间中位置的向量
       this.container.add(this.instance); //添加对象到这个对象的子级，可以添加任意数量的对象。
 
